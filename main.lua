@@ -11,7 +11,6 @@ local function createTween(targetPosition, humanoidRootPart)
     local targetCFrame = CFrame.new(targetPosition)
 
     local tween = TweenService:Create(humanoidRootPart, tweenInfo, { CFrame = targetCFrame })
-    tween:Play()
     return tween
 end
 
@@ -20,18 +19,25 @@ local function teleportToFoodParts()
     local playerCharacter = player.Character or player.CharacterAdded:Wait()
     local playerHumanoidRootPart = playerCharacter:WaitForChild("HumanoidRootPart")
 
-    while true do
-        for _, part in ipairs(game.Workspace.Food:GetChildren()) do
-            if part:IsA("BasePart") then
-                local tween = createTween(part.Position, playerHumanoidRootPart)
-                if tween then
-                    tween.Completed:Wait() -- wait for the tween to finish
-                    wait(0.5) -- wait before the next teleport
-                end
+    local foodParts = game.Workspace.Food:GetChildren()
+    
+    local function teleportToNextPart(index)
+        if index > #foodParts then
+            index = 1 -- Reset to the first part
+        end
+
+        local part = foodParts[index]
+        if part:IsA("BasePart") then
+            local tween = createTween(part.Position, playerHumanoidRootPart)
+            if tween then
+                tween:Play()
+                tween.Completed:Wait() -- Wait for the tween to finish
+                teleportToNextPart(index + 1) -- Move to the next part
             end
         end
-        wait(1) -- wait before starting over
     end
+
+    teleportToNextPart(1) -- Start teleporting
 end
 
 -- Start the teleporting process
