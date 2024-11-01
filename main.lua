@@ -14,31 +14,40 @@ local function createTween(targetPosition, humanoidRootPart)
     return tween
 end
 
-local function teleportToFoodParts()
-    local player = Players.LocalPlayer
-    local playerCharacter = player.Character or player.CharacterAdded:Wait()
-    local playerHumanoidRootPart = playerCharacter:WaitForChild("HumanoidRootPart")
+local function getNearestFoodPart(playerHumanoidRootPart)
+    local nearestPart = nil
+    local nearestDistance = math.huge -- Start with a very large distance
 
-    local foodParts = game.Workspace.Food:GetChildren()
-    
-    local function teleportToNextPart(index)
-        if index > #foodParts then
-            index = 1 -- Reset to the first part
-        end
-
-        local part = foodParts[index]
+    for _, part in ipairs(game.Workspace.Food:GetChildren()) do
         if part:IsA("BasePart") then
-            local tween = createTween(part.Position, playerHumanoidRootPart)
-            if tween then
-                tween:Play()
-                tween.Completed:Wait() -- Wait for the tween to finish
-                teleportToNextPart(index + 1) -- Move to the next part
+            local distance = (part.Position - playerHumanoidRootPart.Position).Magnitude
+            if distance < nearestDistance then
+                nearestDistance = distance
+                nearestPart = part
             end
         end
     end
 
-    teleportToNextPart(1) -- Start teleporting
+    return nearestPart
+end
+
+local function teleportToNearestFoodPart()
+    local player = Players.LocalPlayer
+    local playerCharacter = player.Character or player.CharacterAdded:Wait()
+    local playerHumanoidRootPart = playerCharacter:WaitForChild("HumanoidRootPart")
+
+    while true do
+        local nearestPart = getNearestFoodPart(playerHumanoidRootPart)
+        if nearestPart then
+            local tween = createTween(nearestPart.Position, playerHumanoidRootPart)
+            if tween then
+                tween:Play()
+                tween.Completed:Wait() -- Wait for the tween to finish
+            end
+        end
+        wait(0.1) -- Short wait before checking for the nearest part again
+    end
 end
 
 -- Start the teleporting process
-teleportToFoodParts()
+teleportToNearestFoodPart()
