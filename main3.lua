@@ -1,53 +1,54 @@
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-
+ 
 local player = Players.LocalPlayer
-local humanoidRootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-
+local playernameString = Players.LocalPlayer.Name
+local humanoidRootPart = game.Workspace.Players:FindFirstChild(playernameString):FindFirstChild("HumanoidRootPart")
+local humanoid = game.Workspace.Players:FindFirstChild(playernameString):FindFirstChildOfClass("Humanoid")
+ 
 local movingDirection = Vector3.new(0, 0, 0)
 local isCtrlPressed = false
 local isMoving = false
-
+ 
 local function createTween(targetPosition)
     if not humanoidRootPart or not humanoid then
         return error("i cant find the character")
     end
-
+ 
     local distance = (targetPosition - humanoidRootPart.Position).Magnitude
     local time = distance / humanoid.WalkSpeed
     local tweenInfo = TweenInfo.new(time, Enum.EasingStyle.Quad)
     local targetCFrame = CFrame.new(targetPosition)
-
+ 
     local tween, err = pcall(function()
         local tween = TweenService:Create(humanoidRootPart, tweenInfo, { CFrame = targetCFrame })
         tween:Play()
         tween.Completed:Wait() -- halt til teh tween is done
     end)
-
+ 
     if not tween then
         return err
     end
 end
-
+ 
 local function moveCharacter(direction)
     if humanoidRootPart then
         local targetPosition = humanoidRootPart.Position + direction
         createTween(targetPosition)
     end
 end
-
+ 
 local function updateMovement()
     while isMoving do
         moveCharacter(movingDirection)
-        wait(0.1) -- speed limit (remove if in an autobahn)
+        --wait(0.1) -- speed limit (remove if in an autobahn)
     end
 end
-
+ 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
-
+ 
     if input.UserInputType == Enum.UserInputType.Keyboard then
         if input.KeyCode == Enum.KeyCode.LeftControl then
             isCtrlPressed = true
@@ -58,29 +59,29 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             end
         elseif isCtrlPressed then
             if input.KeyCode == Enum.KeyCode.W then
-                movingDirection = Vector3.new(0, 0, -5) -- forward
+                movingDirection = Vector3.new(0, 0, -3) -- forward
                 isMoving = true
                 updateMovement()
             elseif input.KeyCode == Enum.KeyCode.A then
-                movingDirection = Vector3.new(-5, 0, 0) -- left
+                movingDirection = Vector3.new(-3, 0, 0) -- left
                 isMoving = true
                 updateMovement()
             elseif input.KeyCode == Enum.KeyCode.S then
-                movingDirection = Vector3.new(0, 0, 5) -- backward
+                movingDirection = Vector3.new(0, 0, 3) -- backward
                 isMoving = true
                 updateMovement()
             elseif input.KeyCode == Enum.KeyCode.D then
-                movingDirection = Vector3.new(5, 0, 0) -- right
+                movingDirection = Vector3.new(3, 0, 0) -- right
                 isMoving = true
                 updateMovement()
             end
         end
     end
 end)
-
+ 
 UserInputService.InputEnded:Connect(function(input, gameProcessed)
     if gameProcessed then return end
-
+ 
     if input.UserInputType == Enum.UserInputType.Keyboard then
         if input.KeyCode == Enum.KeyCode.LeftControl then
             isCtrlPressed = false
