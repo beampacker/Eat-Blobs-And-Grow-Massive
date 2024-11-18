@@ -29,34 +29,34 @@ local function isPartInFood(part)
     return false -- Part not found in any food category
 end
 
--- Function to create smooth CFrame movement (for humanoid characters)
+-- Function to create smooth CFrame movement (using TweenService)
 local function createCFrameMovementTween(targetPosition, character)
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
     if not humanoidRootPart then return end
 
-    -- Calculate distance to target position
-    local distance = (targetPosition - humanoidRootPart.Position).Magnitude
-    local time = math.max(distance / 50, 0.5)  -- Prevent zero or too short duration, adjust speed
-
-    -- Create a smooth movement (CFrame interpolation)
-    local startCFrame = humanoidRootPart.CFrame
-    local targetCFrame = CFrame.new(targetPosition)
+    -- Create tween goal to move humanoidRootPart to target position
+    local goal = {Position = targetPosition}
     
-    -- Create a custom tween-like effect using CFrame interpolation
-    local startTime = tick()
-    local function moveCharacter()
-        local elapsedTime = tick() - startTime
-        local alpha = math.clamp(elapsedTime / time, 0, 1)
-        humanoidRootPart.CFrame = startCFrame:Lerp(targetCFrame, alpha)
+    -- Define the tween's properties (smooth movement)
+    local tweenInfo = TweenInfo.new(
+        1,  -- Duration of the tween (adjustable)
+        Enum.EasingStyle.Linear,  -- Easing style (smooth)
+        Enum.EasingDirection.Out,  -- Easing direction
+        0,  -- No repeat count
+        false,  -- Do not reverse the tween
+        0  -- No delay
+    )
+    
+    -- Create the tween
+    local tween = TweenService:Create(humanoidRootPart, tweenInfo, goal)
+    
+    -- Play the tween
+    tween:Play()
 
-        -- Stop the tween once the movement is done
-        if alpha == 1 then
-            return true  -- Movement finished
-        end
-        return false  -- Movement ongoing
+    -- Return a function to check if the tween is completed
+    return function()
+        return tween.Playing == false
     end
-
-    return moveCharacter
 end
 
 -- Function to get the nearest food part in any category
@@ -94,7 +94,7 @@ local function simulateTouch(part, character)
     if part and part:FindFirstChild("TouchInterest") then
         local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
         if humanoidRootPart then
-            -- Fire the touch event by manually invoking the `Touched` event
+            -- Fire the touch event by manually invoking the Touched event
             print("Simulating touch for part: " .. part.Name)
             part.TouchInterest:Fire(humanoidRootPart)
         end
@@ -133,7 +133,9 @@ local function teleportToNearestFoodPart()
         else
             print("No food part found!")
         end
-        wait(0.2)  -- Short wait before checking for the nearest part again
+
+        -- Wait 2 seconds before checking for the nearest food part again
+        wait(2)  -- This delay reduces the frequency of checks, improving performance
     end
 end
 
