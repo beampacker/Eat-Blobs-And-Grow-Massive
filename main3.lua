@@ -19,6 +19,7 @@ local function isPartInFood(part)
             if categoryFolder then
                 -- Check if the part is a child of this category folder
                 if categoryFolder:FindFirstChild(part.Name) then
+                    print(part.Name .. " is in the " .. foodCategory .. " category.")
                     return true -- Part found in one of the food categories
                 end
             end
@@ -28,7 +29,7 @@ local function isPartInFood(part)
     return false -- Part not found in any food category
 end
 
--- Function to create smooth CFrame movement (for custom characters)
+-- Function to create smooth CFrame movement (for humanoid characters)
 local function createCFrameMovementTween(targetPosition, character)
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
     if not humanoidRootPart then return end
@@ -94,8 +95,11 @@ local function simulateTouch(part, character)
         local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
         if humanoidRootPart then
             -- Fire the touch event by manually invoking the `Touched` event
+            print("Simulating touch for part: " .. part.Name)
             part.TouchInterest:Fire(humanoidRootPart)
         end
+    else
+        print("Error: No TouchInterest found on part " .. part.Name)
     end
 end
 
@@ -108,6 +112,7 @@ local function teleportToNearestFoodPart()
     while true do
         local nearestPart = getNearestFoodPart(playerHumanoidRootPart)
         if nearestPart then
+            print("Found nearest food part: " .. nearestPart.Name)
             local moveCharacter = createCFrameMovementTween(nearestPart.Position, playerCharacter)
 
             -- Move the character toward the food part
@@ -125,6 +130,8 @@ local function teleportToNearestFoodPart()
             else
                 print(nearestPart.Name .. " is not in the Food folder!")
             end
+        else
+            print("No food part found!")
         end
         wait(0.2)  -- Short wait before checking for the nearest part again
     end
