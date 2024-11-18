@@ -110,7 +110,16 @@ local function teleportToNearestFoodPart()
     local playerHumanoidRootPart = playerCharacter:WaitForChild("HumanoidRootPart")
 
     while true do
-        local nearestPart = getNearestFoodPart(playerHumanoidRootPart)
+        -- Using pcall to catch any errors that might occur
+        local success, nearestPart = pcall(function()
+            return getNearestFoodPart(playerHumanoidRootPart)
+        end)
+
+        if not success then
+            print("Error while finding the nearest food part: " .. nearestPart) -- `nearestPart` will contain the error message
+            break  -- Exit the loop on error
+        end
+
         if nearestPart then
             print("Found nearest food part: " .. nearestPart.Name)
             local moveCharacter = createCFrameMovementTween(nearestPart.Position, playerCharacter)
